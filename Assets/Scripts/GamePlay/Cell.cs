@@ -31,7 +31,10 @@ public class Cell : MonoBehaviour
         GameObject container = new GameObject("OrbContainer");
         container.transform.SetParent(transform);
         container.transform.localPosition = Vector3.zero;
+        container.transform.localScale = Vector3.one;
         orbContainer = container.transform;
+
+        Debug.Log($"Cell ({name}) orbContainer created at: {orbContainer.position}");
     }
 
     // Called by GridManager to set up cell
@@ -124,29 +127,18 @@ public class Cell : MonoBehaviour
         // Create 3D sphere
         GameObject orb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         orb.transform.SetParent(orbContainer);
-        orb.transform.localScale = Vector3.one * 0.3f;
+        orb.name = $"Orb_{index}";
 
         // Remove collider
         Collider collider = orb.GetComponent<Collider>();
         if (collider != null)
             Destroy(collider);
 
-        // Get renderer and apply material
+        // Color it
         Renderer renderer = orb.GetComponent<Renderer>();
         if (renderer != null)
         {
-            // Load the orb material
-            Material orbMaterial = Resources.Load<Material>("OrbMaterial");
-            if (orbMaterial != null)
-            {
-                renderer.material = new Material(orbMaterial); // Create instance
-                renderer.material.color = color;
-            }
-            else
-            {
-                // Fallback to default material
-                renderer.material.color = color;
-            }
+            renderer.material.color = color;
         }
 
         // Position
@@ -154,16 +146,10 @@ public class Cell : MonoBehaviour
 
         // Add animator and play animation
         OrbAnimator animator = orb.AddComponent<OrbAnimator>();
-        animator.AnimateSpawn();
-        // Add point light (optional - for extra polish)
-        Light light = orb.AddComponent<Light>();
-        light.type = LightType.Point;
-        light.color = color;
-        light.range = 1f;
-        light.intensity = 2f;
-
-        // Add to list
-        orbs.Add(orb);
+        if (animator != null)
+        {
+            animator.AnimateSpawn();
+        }
 
         // Add to list
         orbs.Add(orb);
@@ -172,24 +158,33 @@ public class Cell : MonoBehaviour
     // Get position for orb based on count
     Vector3 GetOrbPosition(int index, int total)
     {
+        Vector3 pos = Vector3.zero;
+
         switch (total)
         {
             case 1:
-                return Vector3.zero; // Center
+                pos = Vector3.zero;
+                break;
 
             case 2:
-                // Two orbs side by side
-                return new Vector3(index == 0 ? -0.2f : 0.2f, 0, -0.1f);
+                pos = new Vector3(index == 0 ? -0.2f : 0.2f, 0, 0);
+                break;
 
             case 3:
-                // Three orbs in triangle
-                if (index == 0) return new Vector3(-0.2f, 0.15f, -0.1f);
-                if (index == 1) return new Vector3(0.2f, 0.15f, -0.1f);
-                return new Vector3(0, -0.15f, -0.1f);
+                if (index == 0) pos = new Vector3(-0.2f, 0.15f, 0);
+                else if (index == 1) pos = new Vector3(0.2f, 0.15f, 0);
+                else pos = new Vector3(0, -0.15f, 0);
+                break;
 
             default:
-                return Vector3.zero;
+                pos = Vector3.zero;
+                break;
         }
+
+        // IMPORTANT: Put orb in front of cell (negative Z)
+        pos.z = -0.2f;
+
+        return pos;
     }
 
     // Cell explodes and sends orbs to neighbors

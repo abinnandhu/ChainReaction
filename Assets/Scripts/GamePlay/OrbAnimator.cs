@@ -14,7 +14,7 @@ public class OrbAnimator : MonoBehaviour
 
     IEnumerator ScaleAnimation()
     {
-        Vector3 targetScale = Vector3.one * 0.3f;
+        Vector3 targetScale = Vector3.one * 0.4f; // Match the orb size
         float duration = 0.2f;
         float elapsed = 0f;
 
@@ -24,7 +24,7 @@ public class OrbAnimator : MonoBehaviour
             float progress = elapsed / duration;
 
             // Ease out back (bouncy effect)
-            float bounce = progress * progress * ((1.7f + 1f) * progress - 1.7f) + 1f;
+            float bounce = Mathf.Clamp01(1f - Mathf.Pow(1f - progress, 3f));
 
             transform.localScale = targetScale * bounce;
 
