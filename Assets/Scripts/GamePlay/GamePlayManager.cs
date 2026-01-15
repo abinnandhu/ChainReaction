@@ -57,6 +57,10 @@ public class GamePlayManager : MonoBehaviour
         {
             UIManager.Instance.UpdateTurnIndicator(currentPlayerIndex);
         }
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayGameMusic();
+        }
     }
 
     // Called when a cell is clicked
@@ -214,11 +218,18 @@ public class GamePlayManager : MonoBehaviour
     // End the game
     // End the game
     // End the game
+    // End the game
     void GameOver(int winnerIndex)
     {
         gameOver = true;
         isProcessingTurn = false;
         Debug.Log($"GAME OVER! Player {winnerIndex + 1} wins!");
+
+        // Play win sound
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayWinSound();
+        }
 
         // Show win screen
         if (UIManager.Instance != null)

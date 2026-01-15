@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: caa11fb13dfcef74db2367e37779859a
+guid: 9ce292f01021afb4b84282f4d6776af3
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6630480112066547912
-    second: 3PlayerBtn_0
+      213: -7976136028084306539
+    second: Gemini_Generated_Image_rae4amrae4amrae4_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 3PlayerBtn_0
+      name: Gemini_Generated_Image_rae4amrae4amrae4_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 499
-        height: 106
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8c0d40a3882340c50800000000000000
-      internalID: 6630480112066547912
+      spriteID: 59df6d5ba821f4190800000000000000
+      internalID: -7976136028084306539
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      3PlayerBtn_0: 6630480112066547912
+      Gemini_Generated_Image_rae4amrae4amrae4_0: -7976136028084306539
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

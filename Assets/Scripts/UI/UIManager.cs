@@ -106,13 +106,23 @@ public class UIManager : MonoBehaviour
     // Button: Resume game
     public void OnResumeClicked()
     {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayButtonClick();
+        }
+
         HidePausePanel();
     }
 
     // Button: Restart game
     public void OnRestartClicked()
     {
-        Time.timeScale = 1; // Make sure time is running
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayButtonClick();
+        }
+
+        Time.timeScale = 1;
 
         if (GamePlayManager.Instance != null)
         {
@@ -123,7 +133,12 @@ public class UIManager : MonoBehaviour
     // Button: Main menu
     public void OnMainMenuClicked()
     {
-        Time.timeScale = 1; // Make sure time is running
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayButtonClick();
+        }
+
+        Time.timeScale = 1;
 
         if (GameManager.Instance != null)
         {
@@ -134,6 +149,11 @@ public class UIManager : MonoBehaviour
     // Button: Pause button clicked
     public void OnPauseButtonClicked()
     {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayButtonClick();
+        }
+
         ShowPausePanel();
     }
 

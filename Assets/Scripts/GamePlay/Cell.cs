@@ -59,7 +59,6 @@ public class Cell : MonoBehaviour
     }
 
     // Add an orb to this cell
-    // Add an orb to this cell
     public void AddOrb(int playerIndex)
     {
         // Set owner
@@ -68,14 +67,19 @@ public class Cell : MonoBehaviour
         // Increase orb count
         orbCount++;
 
+        // Play orb placement sound
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayOrbPlace();
+        }
+
         // Update visual
         UpdateVisual();
 
         // Check if we need to explode
         if (orbCount > capacity)
         {
-            // Explode after short delay
-            Invoke("Explode", 0.5f);  // Changed from 0.3f to 0.5f
+            Invoke("Explode", 0.5f);
         }
     }
 
@@ -120,38 +124,55 @@ public class Cell : MonoBehaviour
         }
     }
 
-    // Create a single orb
-    // Create a single orb (2D version)
     void CreateOrb(int index, Color color)
     {
-        // Create 3D sphere
-        GameObject orb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        // Create 2D sprite orb
+        GameObject orb = new GameObject($"Orb_{index}");
         orb.transform.SetParent(orbContainer);
-        orb.name = $"Orb_{index}";
 
-        // Remove collider
-        Collider collider = orb.GetComponent<Collider>();
-        if (collider != null)
-            Destroy(collider);
+        // Add sprite renderer
+        SpriteRenderer sr = orb.AddComponent<SpriteRenderer>();
 
-        // Color it
-        Renderer renderer = orb.GetComponent<Renderer>();
-        if (renderer != null)
+        // Create a circle sprite programmatically
+        Texture2D texture = new Texture2D(32, 32);
+        Color[] pixels = new Color[32 * 32];
+        for (int y = 0; y < 32; y++)
         {
-            renderer.material.color = color;
+            for (int x = 0; x < 32; x++)
+            {
+                float dx = (x - 16) / 16f;
+                float dy = (y - 16) / 16f;
+                float dist = Mathf.Sqrt(dx * dx + dy * dy);
+
+                if (dist <= 1f)
+                {
+                    pixels[y * 32 + x] = color;
+                }
+                else
+                {
+                    pixels[y * 32 + x] = Color.clear;
+                }
+            }
         }
+        texture.SetPixels(pixels);
+        texture.Apply();
+
+        sr.sprite = Sprite.Create(texture, new Rect(0, 0, 32, 32), new Vector2(0.5f, 0.5f), 32);
+        sr.sortingOrder = 10; // In front of cells
+
+        // Scale
+        orb.transform.localScale = Vector3.one * 0.5f;
 
         // Position
         orb.transform.localPosition = GetOrbPosition(index, orbCount);
 
-        // Add animator and play animation
+        // Add animator
         OrbAnimator animator = orb.AddComponent<OrbAnimator>();
         if (animator != null)
         {
             animator.AnimateSpawn();
         }
 
-        // Add to list
         orbs.Add(orb);
     }
 
@@ -181,8 +202,8 @@ public class Cell : MonoBehaviour
                 break;
         }
 
-        // IMPORTANT: Put orb in front of cell (negative Z)
-        pos.z = -0.2f;
+        // CRITICAL: Move orbs in front of cell (negative Z in 2D)
+        pos.z = -0.5f;
 
         return pos;
     }
@@ -192,7 +213,6 @@ public class Cell : MonoBehaviour
     // Cell explodes and sends orbs to neighbors
     void Explode()
     {
-        // Prevent multiple explosions
         if (isExploding)
             return;
 
@@ -203,6 +223,12 @@ public class Cell : MonoBehaviour
         // Store owner before resetting
         int explosionOwner = ownerIndex;
         Color explosionColor = GamePlayManager.Instance.GetPlayerColor(explosionOwner);
+
+        // Play explosion sound
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayExplosion();
+        }
 
         // Play explosion effect
         if (ExplosionManager.Instance != null)
@@ -217,6 +243,10 @@ public class Cell : MonoBehaviour
             CameraShake.Instance.Shake(0.2f, 0.15f);
         }
 
+        if (VibrationManager.Instance != null)
+        {
+            VibrationManager.Instance.VibrateMedium();
+        }
         // Reset this cell completely
         orbCount = 0;
         ownerIndex = -1;

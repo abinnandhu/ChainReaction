@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    // This will help us adjust camera to fit the grid perfectly
     public static CameraController Instance;
 
     private Camera cam;
@@ -13,26 +12,41 @@ public class CameraController : MonoBehaviour
         cam = GetComponent<Camera>();
     }
 
-    // Call this to adjust camera size to fit game board
-    public void AdjustCameraToFitGrid(float gridWidth, float gridHeight)
+    void Start()
+    {
+        SetupCamera();
+    }
+
+    void SetupCamera()
     {
         if (cam == null)
             return;
 
-        // Calculate aspect ratio
-        float screenRatio = (float)Screen.width / Screen.height;
-        float targetRatio = gridWidth / gridHeight;
+        // Get actual screen dimensions
+        float screenWidth = Screen.width;
+        float screenHeight = Screen.height;
+        float aspectRatio = screenWidth / screenHeight;
 
-        if (screenRatio >= targetRatio)
+        Debug.Log($"Device: {screenWidth}x{screenHeight}, Aspect: {aspectRatio}");
+
+        // REDUCED camera sizes - shows less area = grid looks bigger
+        if (aspectRatio < 0.5f) // Very tall screens
         {
-            // Screen is wider - fit to height
-            cam.orthographicSize = gridHeight / 2f + 1f;
+            cam.orthographicSize = 5.5f;  // Reduced from 6.5f
         }
-        else
+        else if (aspectRatio < 0.6f) // Tall screens
         {
-            // Screen is taller - fit to width
-            float differenceInSize = targetRatio / screenRatio;
-            cam.orthographicSize = gridHeight / 2f * differenceInSize + 1f;
+            cam.orthographicSize = 5.0f;  // Reduced from 6f
         }
+        else if (aspectRatio < 0.7f) // Standard phones
+        {
+            cam.orthographicSize = 4.5f;  // Reduced from 5.5f
+        }
+        else // Tablets
+        {
+            cam.orthographicSize = 4.0f;  // Reduced from 5f
+        }
+
+        Debug.Log($"Camera size: {cam.orthographicSize}");
     }
 }

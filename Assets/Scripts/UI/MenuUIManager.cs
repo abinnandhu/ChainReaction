@@ -11,6 +11,10 @@ public class MenuUIManager : MonoBehaviour
     {
         // Start by showing main menu
         ShowMainMenu();
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayMenuMusic();
+        }
     }
 
     // Show main menu, hide others

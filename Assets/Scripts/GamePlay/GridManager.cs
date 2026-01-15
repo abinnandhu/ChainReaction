@@ -8,11 +8,13 @@ public class GridManager : MonoBehaviour
     [Header("Grid Settings")]
     public int rows = 8;
     public int columns = 6;
-    public float cellSize = 1f;
-    public float cellSpacing = 0.1f;
 
     [Header("Prefab")]
     public GameObject cellPrefab;
+
+    // Calculated values
+    private float cellSize;
+    private float cellSpacing = 0.08f;
 
     // 2D array to store all cells
     public Cell[,] grid;
@@ -30,6 +32,9 @@ public class GridManager : MonoBehaviour
     // Create the entire grid
     void GenerateGrid()
     {
+        // Calculate cell size based on screen
+        CalculateCellSize();
+
         // Initialize array
         grid = new Cell[columns, rows];
 
@@ -47,8 +52,8 @@ public class GridManager : MonoBehaviour
 
                 // Create cell
                 GameObject cellObj = Instantiate(cellPrefab, position, Quaternion.identity);
-                cellObj.transform.SetParent(transform); // Parent to Grid object
-                cellObj.name = $"Cell ({x},{y})"; // Nice name for debugging
+                cellObj.transform.SetParent(transform);
+                cellObj.name = $"Cell ({x},{y})";
 
                 // Get Cell component and initialize
                 Cell cell = cellObj.GetComponent<Cell>();
@@ -60,8 +65,62 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        // Center the grid on screen
-        CenterGrid();
+        // Center and scale the grid
+        FitGridToScreen();
+    }
+
+    // Calculate optimal cell size
+    void CalculateCellSize()
+    {
+        // Start with a base size
+        cellSize = 1f;
+    }
+
+    // Fit entire grid to screen
+    // Fit entire grid to screen
+    void FitGridToScreen()
+    {
+        // Calculate grid dimensions
+        float gridWidth = (columns - 1) * (cellSize + cellSpacing);
+        float gridHeight = (rows - 1) * (cellSize + cellSpacing);
+
+        // Get screen dimensions in world units
+        Camera cam = Camera.main;
+        float screenHeight = cam.orthographicSize * 2f;
+        float screenWidth = screenHeight * cam.aspect;
+
+        // REDUCED margins - fill more screen space
+        float topUISpace = 1.2f;      // Reduced
+        float bottomUISpace = 0.3f;   // Reduced
+        float sideMargin = 0.3f;      // Reduced
+
+        float availableHeight = screenHeight - topUISpace - bottomUISpace;
+        float availableWidth = screenWidth - (sideMargin * 2f);
+
+        // Calculate scale factors
+        float scaleX = availableWidth / gridWidth;
+        float scaleY = availableHeight / gridHeight;
+
+        // Use smaller scale to ensure grid fits
+        float scale = Mathf.Min(scaleX, scaleY);
+
+        // REMOVE or increase the clamp - let grid be bigger
+        scale = Mathf.Clamp(scale, 0.7f, 2.5f); // Allow larger scale
+
+        // Apply scale to grid
+        transform.localScale = Vector3.one * scale;
+
+        // Center the grid
+        float centerX = gridWidth / 2f;
+        float centerY = gridHeight / 2f;
+
+        // Position accounting for UI - better centering
+        float yOffset = (topUISpace - bottomUISpace) / 2f / scale;
+
+        transform.position = new Vector3(-centerX, -centerY - yOffset, 0) * scale;
+
+        Debug.Log($"Screen: {Screen.width}x{Screen.height}, Scale: {scale}");
+        Debug.Log($"Grid position: {transform.position}, Scale: {transform.localScale}");
     }
 
     // Determine capacity based on position
@@ -70,28 +129,9 @@ public class GridManager : MonoBehaviour
         bool isCorner = (x == 0 || x == columns - 1) && (y == 0 || y == rows - 1);
         bool isEdge = x == 0 || x == columns - 1 || y == 0 || y == rows - 1;
 
-        if (isCorner) return 1;      // Corners: 1 orb capacity
-        if (isEdge) return 2;         // Edges: 2 orb capacity
-        return 3;                     // Center: 3 orb capacity
-    }
-
-    // Center grid in camera view
-    void CenterGrid()
-    {
-        float gridWidth = (columns - 1) * (cellSize + cellSpacing);
-        float gridHeight = (rows - 1) * (cellSize + cellSpacing);
-
-        float centerX = gridWidth / 2f;
-        float centerY = gridHeight / 2f;
-
-        // Move grid so it's centered at (0,0)
-        transform.position = new Vector3(-centerX, -centerY, 0);
-
-        // Tell camera to adjust
-        if (CameraController.Instance != null)
-        {
-            CameraController.Instance.AdjustCameraToFitGrid(gridWidth, gridHeight);
-        }
+        if (isCorner) return 1;
+        if (isEdge) return 2;
+        return 3;
     }
 
     // Get all neighboring cells
@@ -99,26 +139,15 @@ public class GridManager : MonoBehaviour
     {
         List<Cell> neighbors = new List<Cell>();
 
-        // Check left
-        if (x > 0)
-            neighbors.Add(grid[x - 1, y]);
-
-        // Check right
-        if (x < columns - 1)
-            neighbors.Add(grid[x + 1, y]);
-
-        // Check down
-        if (y > 0)
-            neighbors.Add(grid[x, y - 1]);
-
-        // Check up
-        if (y < rows - 1)
-            neighbors.Add(grid[x, y + 1]);
+        if (x > 0) neighbors.Add(grid[x - 1, y]);
+        if (x < columns - 1) neighbors.Add(grid[x + 1, y]);
+        if (y > 0) neighbors.Add(grid[x, y - 1]);
+        if (y < rows - 1) neighbors.Add(grid[x, y + 1]);
 
         return neighbors;
     }
 
-    // Get cell at position (for debugging)
+    // Get cell at position
     public Cell GetCell(int x, int y)
     {
         if (x >= 0 && x < columns && y >= 0 && y < rows)
